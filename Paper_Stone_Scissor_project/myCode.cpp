@@ -44,7 +44,7 @@ enChoices GetUserChoice()
     short choice;
     do
     {
-        cout << "What is your Choice ? must be :\n1)Paper\n2)Stone\n3)Scissor" << endl;
+        cout << "What is your Choice : 1)Paper 2)Stone 3)Scissor >> " ;
         cin >> choice;
     } while (choice < 1 || choice > 3);
     
@@ -140,6 +140,7 @@ string GetWinnerName(enWinnerplayer winnerPlayer)
 
     return winnerPlayerName;
 }
+
 void DoStatusAction(enWinnerplayer winnerPlayer)
 {
     if (winnerPlayer==enWinnerplayer::User)
@@ -155,48 +156,91 @@ void DoStatusAction(enWinnerplayer winnerPlayer)
     }
     
 }
+
 void PrintRoundResult(enChoices Userchoice,enChoices Computerchoice,enWinnerplayer winnerPlayer)
 {
     DoStatusAction(winnerPlayer);
-    cout << "Computer choice : " << GetChoiceName(Computerchoice) << endl;
-    cout << "Your choice : " << GetChoiceName(Userchoice) << endl;
-    cout << "Winner : " << GetWinnerName(winnerPlayer) << endl;
+    cout << "\n\t\t=========================================\n";
+    cout << "\t\t=========================================\n";
+    cout << "\t\t\tComputer choice : " << GetChoiceName(Computerchoice) << endl;
+    cout << "\t\t\tYour choice : " << GetChoiceName(Userchoice) << endl;
+    cout << "\t\t\tWinner : " << GetWinnerName(winnerPlayer) << endl;
+    cout << "\t\t=========================================\n";
+    cout << "\t\t=========================================\n\n";
+
 
 }
 
 void PrintGameResult(stPlayerResult PlayerResult)
 {
     DoStatusAction(PlayerResult.Winner());
-    cout << "==========================================\n";
-    cout << "==========================================\n";
-    cout << "Won times : " << PlayerResult.WinCount << endl;
-    cout << "Draw times: " << PlayerResult.DrawCount << endl;
-    cout << "Lose times: " << PlayerResult.LoseCount << endl;
-    cout << "Winner is: " << GetWinnerName(PlayerResult.Winner()) << endl;
-    cout << "==========================================\n";
-    cout << "==========================================\n";
+    cout << "\t\t#########################################\n\n";
+    cout << "\t\t#########################################\n\n";
+    cout << "\t\t==============|++GAME OVER++|============\n\n";
+    cout << "\t\t=========================================\n";
+    cout << "\t\t\tWon times : " << PlayerResult.WinCount << endl;
+    cout << "\t\t\tDraw times: " << PlayerResult.DrawCount << endl;
+    cout << "\t\t\tLose times: " << PlayerResult.LoseCount << endl;
+    cout << "\t\t\tWinner is: " << GetWinnerName(PlayerResult.Winner()) << endl;
+    cout << "\t\t=========================================\n";
+    cout << "\t\t#########################################\n";
 
 }
-void PlayGame(int roundCount)
+
+bool YesOrNo(string msg)
 {
-    stPlayerResult playerResult;
-    for (unsigned i = 1; i <= roundCount ; i++)
+    char answer;
+    cout << msg;
+    cin >> answer;
+    if (answer=='Y' || answer=='y')
     {
-        cout << "\t\t ============ | Round ( " << i << " ) | ============" << endl;
-        enChoices userchoice=GetUserChoice();
-        enChoices computerchoice=GetComputerChoice();
-        enWinnerplayer winnerPlayer=GetWinner(userchoice,computerchoice,playerResult);
-        PrintRoundResult(userchoice,computerchoice,winnerPlayer);
-    }
-    PrintGameResult(playerResult);
+        return true;
+    }else
+        return false;
+
+}
+
+void ResetScreen()
+{
+    system("color 0F");
+    system("cls");
+}
+
+void PlayGame()
+{
+    bool another_game=false;
+
+    do
+    {
+        ResetScreen();
+        
+        unsigned roundCound=ReadPositiveNumber("Enter count of rounds ?");
+
+        stPlayerResult playerResult;
+
+        for (unsigned i = 1; i <= roundCound ; i++)
+        {
+            cout << "\t\t============ | Round ( " << i << " ) | ============" << endl;
+            enChoices userchoice=GetUserChoice();
+            enChoices computerchoice=GetComputerChoice();
+            enWinnerplayer winnerPlayer=GetWinner(userchoice,computerchoice,playerResult);
+
+            PrintRoundResult(userchoice,computerchoice,winnerPlayer);
+        }
+
+        PrintGameResult(playerResult);
+
+        another_game=YesOrNo("Do you want to play another game Y/N >> ");
+
+    } while (another_game);
+    
 }
 
 int main()
 {
-    int key;
     srand((unsigned) time(NULL));
-    unsigned roundCound=ReadPositiveNumber("Enter count of rounds ?");
-    PlayGame(roundCound);
-    cin >> key;
+
+    PlayGame();
+
     return 0;
 }
