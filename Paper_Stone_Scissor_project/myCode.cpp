@@ -27,33 +27,32 @@ struct stPlayerResult
     }
 };
 
-unsigned ReadPositiveNumber(string msg)
+int ReadPositiveNumberInRange(int start,int end,string msg)
 {
     int num=0;
     do
     {
-        cout << msg << endl;
-        cout << ">>>";
+        cout << msg;
         cin >> num;
-    } while (num<=0);
+    } while (num < start || num > end);
     return num;
+}
+
+
+int RandomNumber(int start, int end) {
+    return rand() % (end - start + 1) + start;
 }
 
 enChoices GetUserChoice()
 {
-    short choice;
-    do
-    {
-        cout << "What is your Choice : 1)Paper 2)Stone 3)Scissor >> " ;
-        cin >> choice;
-    } while (choice < 1 || choice > 3);
-    
+    short choice=ReadPositiveNumberInRange(1,3,"What is your Choice : 1)Paper 2)Stone 3)Scissor >> ");
+
     return (enChoices)choice;
 }
 
 enChoices GetComputerChoice()
 {
-    short choice=rand()%3+1;
+    short choice=RandomNumber(1,3);
     return (enChoices)choice;
 }
 
@@ -64,95 +63,63 @@ enWinnerplayer GetWinner(enChoices Userchoice,enChoices Computerchoice,stPlayerR
     {
         winnerPlayer=enWinnerplayer::Non;
         PlayerResult.DrawCount++;
+
     }else
     {
-        if (Userchoice==enChoices::Paper&&Computerchoice==enChoices::Scissor)
-        {
-            winnerPlayer=enWinnerplayer::Computer;
-            PlayerResult.LoseCount++;
-        }
         if (Userchoice==enChoices::Stone&&Computerchoice==enChoices::Scissor)
         {
             winnerPlayer=enWinnerplayer::User;
             PlayerResult.WinCount++;
-        }
-        if (Userchoice==enChoices::Paper&&Computerchoice==enChoices::Stone)
+
+        }else if (Userchoice==enChoices::Paper&&Computerchoice==enChoices::Stone)
         {
             winnerPlayer=enWinnerplayer::User;
             PlayerResult.WinCount++;
-        }
-        if (Userchoice==enChoices::Scissor&&Computerchoice==enChoices::Stone)
-        {
-            winnerPlayer=enWinnerplayer::Computer;
-            PlayerResult.LoseCount++;
-        }
-        if (Userchoice==enChoices::Stone&&Computerchoice==enChoices::Paper)
-        {
-            winnerPlayer=enWinnerplayer::Computer;
-            PlayerResult.LoseCount++;
-        }
-        if (Userchoice==enChoices::Scissor&&Computerchoice==enChoices::Paper)
+
+        }else if (Userchoice==enChoices::Scissor&&Computerchoice==enChoices::Paper)
         {
             winnerPlayer=enWinnerplayer::User;
             PlayerResult.WinCount++;
+
+        }else
+        {
+            winnerPlayer=enWinnerplayer::Computer;
+            PlayerResult.LoseCount++;
         }
         
     }
+
     return winnerPlayer;
 }
 
 string GetChoiceName(enChoices choice)
 {
-    string choiceName;
+    string choiceName[3]={"Paper","Stone","Scissor"};
 
-    if (choice==enChoices::Paper)
-    {
-        choiceName="Paper";
-
-    }else if (choice==enChoices::Stone)
-    {
-        choiceName="Stone";
-
-    }else if (choice==enChoices::Scissor)
-    {
-        choiceName="Scissor";
-    }
-
-    return choiceName;
+    return choiceName[choice - 1];
 }
 
 string GetWinnerName(enWinnerplayer winnerPlayer)
 {
-    string winnerPlayerName;
+    string winnerPlayerName[3]={"No Winner","You","Computer"};
 
-    if (winnerPlayer==enWinnerplayer::Non)
-    {
-        winnerPlayerName="No Winner";
-
-    }else if (winnerPlayer==enWinnerplayer::User)
-    {
-        winnerPlayerName="You";
-
-    }else if (winnerPlayer==enWinnerplayer::Computer)
-    {
-        winnerPlayerName="Computer";
-    }
-
-    return winnerPlayerName;
+    return winnerPlayerName[winnerPlayer];
 }
 
 void DoStatusAction(enWinnerplayer winnerPlayer)
 {
-    if (winnerPlayer==enWinnerplayer::User)
+    switch (winnerPlayer)
     {
-        system("color 2F");
-    }else if(winnerPlayer==enWinnerplayer::Computer)
-    {
-        cout << "\a";
-        system("color 4F");
-    }else
-    {
-        system("color 6F");
+        case enWinnerplayer::User:
+            system("color 2F");
+            break;
+        case enWinnerplayer::Computer:
+            cout << "\a";
+            system("color 4F");
+            break;
+        default:
+            system("color 6F");
+            break;
     }
     
 }
@@ -214,7 +181,7 @@ void PlayGame()
     {
         ResetScreen();
         
-        unsigned roundCound=ReadPositiveNumber("Enter count of rounds ?");
+        short roundCound=ReadPositiveNumberInRange(1,100,"Enter count of rounds from 1 to 100 ?");
 
         stPlayerResult playerResult;
 
