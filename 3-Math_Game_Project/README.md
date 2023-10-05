@@ -1,7 +1,4 @@
-# Paper_Stone_Scissor_project
-
-### Project Requirments
-<img src="./project_architecture_images/requirements.png">
+# Math_Game_Project
 
 ### Project notes
 <hr>
