@@ -26,10 +26,17 @@ struct stQuestionInfo
     short QuestionNumber;
     short FirstNum = 0;
     short LastNum = 0;
-    char Oprator;
-    enLevel Level;
+    enOpratorType OpratorType;
+    char OpratorSymbol;
+    enLevel level;
     short CorrectAnswer = 0;
     short UserAnswer = 0;
+    char GetOpratorSymbol()
+    {
+        char symbols[4]={'+','-','*','/'};
+        return symbols[int(OpratorType)-1];
+    }
+
 };
 
 struct stGameResult
@@ -44,9 +51,26 @@ struct stGameResult
     string status()
     {
         if (CorrectAnswersTimes >= WrongAnswersTimes)
+        {
+            system("color 2F");
             return "Passed";
+        }
         else
-            return "Failed";
+        {
+            system("color 4F");
+            return "Failed"; 
+        }
+    }
+
+    string OpratorName()
+    {
+        string Names[5]={"Plus","Minus","Multiply","Divide","Mix"};
+        return Names[(int)level-1];
+    }
+    string LevelName()
+    {
+        string Names[4]={"Easy","Mid","Hard","Mixed"};
+        return Names[(int)level-1];
     }
 };
 
@@ -94,40 +118,44 @@ void ResetScreen()
 }
 
 
-enOpratorType CheckOpratorType(enOpratorType OpratorType)
+void CheckOpratorType(stGameResult& GameResult)
 {
 
-    if (OpratorType==enOpratorType::Mix)
+    if (GameResult.OpratorType==enOpratorType::Mix)
     {
-        OpratorType=(enOpratorType)RandomNumber(1,4);
+        GameResult.QuestionInfo.OpratorType=(enOpratorType)RandomNumber(1,4);
+    }else{
+        GameResult.QuestionInfo.OpratorType=GameResult.OpratorType;
     }
-    return OpratorType;
 }
 
 
-enLevel CheckLevelType(enLevel Level)
+void CheckLevel(stGameResult& GameResult)
 {
 
-    if (Level==enLevel::Mixed)
+    if (GameResult.level==enLevel::Mixed)
     {
-        Level=(enLevel)RandomNumber(1,3);
+        GameResult.QuestionInfo.level=(enLevel)RandomNumber(1,3);
+    }else{
+        GameResult.QuestionInfo.level=GameResult.level;
     }
-    return Level;
+
 }
-
-
 
 
 void PrintQuestionResult(stGameResult& GameResult)
 {
     if (GameResult.QuestionInfo.CorrectAnswer == GameResult.QuestionInfo.UserAnswer)
     {
-        cout << "passed" << endl;
+        cout << "Correct answer\n__________" << endl;
+        system("color 2F");
         GameResult.CorrectAnswersTimes+=1;
     }
     else
     {
-        cout << "failed" << endl;
+        cout << "Wrong Answer" << endl;
+        system("color 4F");
+
         GameResult.WrongAnswersTimes+=1;
         
         cout << "Correct answer =" << GameResult.QuestionInfo.CorrectAnswer << endl;
@@ -137,12 +165,18 @@ void PrintQuestionResult(stGameResult& GameResult)
 
 void PrintFinalResult(stGameResult GameResult)
 {
-    if (GameResult.CorrectAnswersTimes >= GameResult.WrongAnswersTimes)
-    {
-        cout << "your finally passed" << endl;
-    }
-    else
-        cout << "your finally failed" << endl;
+    cout << "\t\t#########################################\n\n";
+    cout << "\t\t#########################################\n\n";
+    cout << "\t\t==============|++GAME OVER++|============\n\n";
+    cout << "\t\t=========================================\n";
+    cout << "\t\t\tQuestions count : " << GameResult.QuestionsCount << endl;
+    cout << "\t\t\tQuestions Type : " << GameResult.OpratorName() << endl;
+    cout << "\t\t\tQuestions Level : " << GameResult.LevelName() << endl;
+    cout << "\t\t\tCorrect times: " << GameResult.CorrectAnswersTimes << endl;
+    cout << "\t\t\tWrong times : " << GameResult.WrongAnswersTimes << endl;
+    cout << "\t\t\tFinal Status: " << GameResult.status() << endl;
+    cout << "\t\t=========================================\n";
+    cout << "\t\t#########################################\n";
 }
 
 void GetQuestionAnswer(stGameResult& GameResult)
@@ -150,8 +184,8 @@ void GetQuestionAnswer(stGameResult& GameResult)
     int answer;
     int FNum=GameResult.QuestionInfo.FirstNum;
     int LNum=GameResult.QuestionInfo.LastNum;
-
-    switch (GameResult.OpratorType)
+    
+    switch (GameResult.QuestionInfo.OpratorType)
     {
     case enOpratorType::Plus:
         answer = FNum + LNum;
@@ -174,23 +208,22 @@ void GetQuestionAnswer(stGameResult& GameResult)
     }
     GameResult.QuestionInfo.CorrectAnswer=answer;
 }
-void GetOpratorSymbol(stGameResult& GameResult)
+
+void PresentQuestion(stGameResult& GameResult)
 {
-    char symbols[4]={'+','-','*','/'};
-    GameResult.QuestionInfo.Oprator=symbols[int(GameResult.OpratorType)-1];
-}
-void PresentQuestion(stGameResult GameResult)
-{
-    GetOpratorSymbol(GameResult);
+
+    cout << "Question [" << GameResult.QuestionInfo.QuestionNumber << "/" << GameResult.QuestionsCount <<"]" << endl;
     cout << GameResult.QuestionInfo.FirstNum << endl;
-    cout << GameResult.QuestionInfo.Oprator << endl;
+    cout << GameResult.QuestionInfo.GetOpratorSymbol() << endl;
     cout << GameResult.QuestionInfo.LastNum;
     cout << "\n____" << endl;
 }
-void GenerateQuestion(stGameResult GameResult)
-{
 
-    int NumsLevel = pow(10, (int)CheckLevelType(GameResult.level));
+void GenerateQuestion(stGameResult& GameResult)
+{
+    CheckLevel(GameResult);
+    CheckOpratorType(GameResult);
+    int NumsLevel = pow(10, (int)GameResult.QuestionInfo.level);
     GameResult.QuestionInfo.FirstNum= RandomNumber(1, NumsLevel);
     GameResult.QuestionInfo.LastNum= RandomNumber(1, NumsLevel);
 
@@ -204,6 +237,7 @@ void PlayRound(stGameResult& GameResult)
 {
     for (unsigned i = 1; i <= GameResult.QuestionsCount; i++)
     {
+        GameResult.QuestionInfo.QuestionNumber=i;
         GenerateQuestion(GameResult);
         GameResult.QuestionInfo.UserAnswer = ReadNumber("Enter Result >>");
         PrintQuestionResult(GameResult);
@@ -250,42 +284,3 @@ int main()
 
     return 0;
 }
-
-
-// void DoWonAction(enWinnerplayer winnerPlayer)
-// {
-//     switch (winnerPlayer)
-//     {
-//         case enWinnerplayer::User:
-//             system("color 2F");
-//             break;
-//         case enWinnerplayer::Computer:
-//             cout << "\a";
-//             system("color 4F");
-//             break;
-//         default:
-//             system("color 6F");
-//             break;
-//     }
-
-// }
-
-
-// void PrintGameResult(stGameResult GameResult)
-// {
-//     DoWonAction(GameResult.Winner());
-//     cout << "\t\t#########################################\n\n";
-//     cout << "\t\t#########################################\n\n";
-//     cout << "\t\t==============|++GAME OVER++|============\n\n";
-//     cout << "\t\t=========================================\n";
-//     cout << "\t\t\tRounds count : " << GameResult.RoundsCount << endl;
-//     cout << "\t\t\tWon times : " << GameResult.WinCount << endl;
-//     cout << "\t\t\tDraw times: " << GameResult.DrawCount << endl;
-//     cout << "\t\t\tLose times: " << GameResult.LoseCount << endl;
-//     cout << "\t\t\tWinner is: " << GetWinnerName(GameResult.Winner()) << endl;
-//     cout << "\t\t=========================================\n";
-//     cout << "\t\t#########################################\n";
-
-// }
-
-
