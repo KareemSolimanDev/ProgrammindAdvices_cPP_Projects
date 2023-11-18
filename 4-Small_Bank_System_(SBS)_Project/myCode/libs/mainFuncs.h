@@ -4,8 +4,21 @@
 #include "config.h"
 #include "helpers.h"
 
+
 using namespace helpers;
 using namespace configs;
+
+//declare some name spaces to solve curiculer dependancy
+
+namespace getData{
+    sClient GetUpdatedClientData();
+};
+namespace links
+{
+    void toHome();
+    void toTransScreen();
+} // namespace links
+//=======================================
 
 
 
@@ -57,10 +70,7 @@ namespace format
     }
 } // namespace format
 
-//declare getData name space to solve curiculer dependancy
-namespace getData{
-    sClient GetUpdatedClientData();
-};
+
 
 namespace subProcess
 {
@@ -188,10 +198,26 @@ namespace printData
     }
 } // namespace printData
 
-namespace mainFuncs
-{
-        
 
+namespace transactions
+{
+    void DepositeFunc()
+    {
+        cout << "deposite" << endl;
+    }
+    void WithdrawFunc()
+    {
+        cout << "Withdraw" << endl;
+    }
+    void TotalBalancesFunc()
+    {
+        cout << "totalBalances" << endl;
+    }
+} // namespace transactions
+
+namespace ClientOprations
+{
+    
     void AddClients()
     {
         do
@@ -287,6 +313,117 @@ namespace mainFuncs
             
         }
     }
-    
 
-} // namespace mainFuncs
+} // namespace ClientOprations
+
+
+
+namespace mainScreensFuncs
+{
+    
+    void CallSuitableTransaction(enTransChoices choise)
+    {
+        system("cls");
+        switch (choise)
+        {
+        case enTransChoices::Deposite:
+            transactions::DepositeFunc();
+            links::toTransScreen();
+            break;
+        
+        case enTransChoices::Withdraw:
+            transactions::WithdrawFunc();
+            links::toTransScreen();
+            break;
+        
+        case enTransChoices::TotalBalances :
+            transactions::TotalBalancesFunc();
+            links::toTransScreen();
+            break;
+        
+        case enTransChoices::MainMenu:
+            links::toHome();
+            break;
+        
+        default:
+            break;
+        }
+    }
+    
+    void TransactionsScreen()
+    {
+        vector<string> menuItems={"Deposite","Withdraw","Total balances","Main menu"};
+        alert("Transactions screen.");
+        menu(menuItems,1);
+        enTransChoices choice=(enTransChoices) ReadNumInRange("Please ,Enter your choice from menu : ",1,menuItems.size());
+        CallSuitableTransaction(choice);
+    }
+
+    void CallSuitableProcess(enMainChoices choice)
+    {
+
+        system("cls");
+        switch (choice)
+        {
+        case enMainChoices::ShowList :
+            ClientOprations::PrintClientsData();
+            links::toHome();
+            break;
+        case enMainChoices::Add :
+            ClientOprations::AddClients();
+            links::toHome();
+            break;
+        case enMainChoices::Search :
+            ClientOprations::SearchingResult();
+            links::toHome();
+            break;
+        case enMainChoices::Update :
+            ClientOprations::UpdateClient();
+            links::toHome();
+            break;
+        case enMainChoices::Delete :
+            ClientOprations::DeleteClient();
+            links::toHome();
+            break;
+        case enMainChoices::Transactions :
+            TransactionsScreen();
+            
+            break;
+        case enMainChoices::Exit :
+            alert("Program Closed successfully");
+            break;
+        
+        default:
+            break;
+        }
+    }
+
+    void Home()
+    {
+        vector<string> menuItems={"Show All Clients" ,"Add new client" ,"Find client" ,"Update client" ,"Delete client" ,"Transactions","Exit"};
+        system("cls");
+        alert("Welcome Admin ,Dashboard here");
+        menu(menuItems,1);
+
+        enMainChoices choice=(enMainChoices) ReadNumInRange("Please ,Enter your choice from menu : ",1,menuItems.size());
+        CallSuitableProcess(choice);
+    }
+
+} // namespace mainScreensFuncs
+
+namespace links
+{
+    void toHome()
+    {
+        cout << "We will go to the Home ,";
+        system("pause");
+        mainScreensFuncs::Home();
+    }
+    void toTransScreen()
+    {
+        cout << "We will go to the transactions screen ,";
+        system("pause");
+        mainScreensFuncs::TransactionsScreen();
+    }
+
+} // namespace links
