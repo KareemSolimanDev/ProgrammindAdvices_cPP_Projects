@@ -217,6 +217,12 @@ namespace mainFuncs
         cout << "| " << left << setw(12) << "Balance";
         cout << "\n_______________________________________________________";
         cout << "_________________________________________\n" << endl;
+        
+        if (vData.size()==0)
+        {
+            cout << "\t\tOops ,There are no clients in the system!!\n";
+        }
+        
 
         for (sClient &Client : vData)
         {
