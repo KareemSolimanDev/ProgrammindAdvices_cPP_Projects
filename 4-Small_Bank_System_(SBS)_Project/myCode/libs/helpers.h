@@ -4,59 +4,61 @@
 
 using namespace std;
 
-
-
 namespace helpers
 {
-    string tabs(short tabsCount)
+    string repeat(char letter, short Count)
     {
-        string tabs="";
-        for (short i = 0; i < tabsCount; i++)
+        string word = "";
+        for (short i = 0; i < Count; i++)
         {
-            tabs += '\t';
+            word += letter;
         }
-        return tabs;
-    }
-    
-    void alert(string msg,short marginLeft=2)
-    {
-        cout << "===========================================================\n";
-        cout << tabs(marginLeft) << msg << "\n";
-        cout << "===========================================================" << endl;
+        return word;
     }
 
-    void menu(vector<string> &menuItems,short marginLeft=2)
+    void alert(string msg, short Xpadding = 15, short Ypadding = 1)
     {
+        short width = (msg.length()) + (Xpadding * 2);
+
+        cout << repeat('=', width) << repeat('\n', Ypadding);
+        cout << repeat(' ', Xpadding) << msg << repeat('\n', Ypadding);
+        cout << repeat('=', width) << endl;
+    }
+
+    void menu(string menuTitle, vector<string> &menuItems)
+    {
+        short Lmargin = menuTitle.length() + 2;
+
+        cout << menuTitle << " :\n";
         for (short i = 0; i < menuItems.size(); i++)
         {
-            cout << tabs(marginLeft) << '[' << i+1 << ']' << " : " << menuItems[i] << '\n';
+            cout << repeat(' ', Lmargin) << '[' << i + 1 << ']' << " : " << menuItems[i] << '\n';
         }
-        cout << "===========================================================" << endl;
-
+        cout << repeat('=', 60) << endl;
     }
 
-    int ReadNumInRange(string msg,int min,int max=INT_MAX)
+    int ReadNumInRange(string msg, int min, int max = INT_MAX)
     {
         int num;
-        bool errorMax=false;
-        bool errorMin=false;
+        bool errorMax = false;
+        bool errorMin = false;
         do
         {
             if (errorMax)
             {
                 cout << "Your number must be lower than : " << max << endl;
-            }else if (errorMin)
+            }
+            else if (errorMin)
             {
                 cout << "Your number must be higher than : " << min << endl;
             }
-            
 
             cout << msg;
             cin >> num;
             cin.ignore();
-            
-            (num<min)?errorMin=true:errorMax=true;
-            
+
+            (num < min) ? errorMin = true : errorMax = true;
+
         } while (num < min || num > max);
 
         return num;
@@ -69,23 +71,23 @@ namespace helpers
         return stringInput;
     }
 
-    void AppendDataToFile(string fileName,string Data)
+    void AppendDataToFile(string fileName, string Data)
     {
         fstream myFile;
-        myFile.open(fileName,ios::app);
+        myFile.open(fileName, ios::app);
         myFile << Data << endl;
         myFile.close();
     }
 
-    bool GetBoolResponse(string msg,string passCase)
+    bool GetBoolResponse(string msg, string passCase)
     {
         string ans;
         cout << msg;
-        cin  >> ans;
+        cin >> ans;
         cin.ignore();
         return ans == passCase;
     }
-    vector<string> SplitWords(string sentence,string delim)
+    vector<string> SplitWords(string sentence, string delim)
     {
         vector<string> words = {};
         string word = "";
@@ -103,19 +105,16 @@ namespace helpers
         }
         return words;
     }
-    
-    void WriteDataOnFile(string fileName,vector<string> newData)
+
+    void WriteDataOnFile(string fileName, vector<string> newData)
     {
         fstream File;
-        File.open(fileName,ios::out);
-        
+        File.open(fileName, ios::out);
+
         for (string &line : newData)
         {
             File << line << endl;
         }
         File.close();
-
     }
 } // namespace helpers
-
-
