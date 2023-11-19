@@ -15,7 +15,7 @@ namespace getData{
 };
 namespace links
 {
-    void toHome();
+    void toHome(bool load = true);
     void toTransScreen();
 } // namespace links
 //=======================================
@@ -100,6 +100,15 @@ namespace subProcess
         vec.erase(vec.begin()+RecordIndex);
     }
 
+    float CalcTotalBalances(vector<sClient> vData)
+    {
+        float total=0;
+        for (sClient i : vData)
+        {
+            total+=i.accountBalance;
+        }
+        return total;
+    }
 } // namespace subProcess
 
 namespace getData
@@ -198,22 +207,6 @@ namespace printData
     }
 } // namespace printData
 
-
-namespace transactions
-{
-    void DepositeFunc()
-    {
-        cout << "deposite" << endl;
-    }
-    void WithdrawFunc()
-    {
-        cout << "Withdraw" << endl;
-    }
-    void TotalBalancesFunc()
-    {
-        cout << "totalBalances" << endl;
-    }
-} // namespace transactions
 
 namespace ClientOprations
 {
@@ -317,6 +310,64 @@ namespace ClientOprations
 } // namespace ClientOprations
 
 
+namespace transactions
+{
+    void DepositeFunc()
+    {
+        alert("Deposite Screen");
+        string accountNum=ReadString("Please ,Enter Client account number to deposite.\n>> ");
+        vector<sClient> vData=getData::LoadClientData();
+        short ClientIndex=subProcess::FindClientData(vData,accountNum);
+
+        printData::PrintSearchingResult(vData,ClientIndex);
+
+        if (ClientIndex!=-1)
+        {
+            unsigned int depositeAmount=ReadNumInRange("Enter your amount to deposite\n>> ",10);
+            bool continueupdateProcess=GetBoolResponse("Are you sure to deposite this amount (" 
+            + to_string(depositeAmount) + "). (y/n)\n>> ","y");
+
+            if (continueupdateProcess)
+            {
+                vData[ClientIndex].accountBalance+=depositeAmount;
+                WriteDataOnFile(fileName,format::ConvertRecordsToLines(vData,delim));
+                alert("Done ,Deposite amount has been added successfully",1);
+            }
+            
+        }
+    }
+    void WithdrawFunc()
+    {
+        alert("Withdraw Screen");
+        string accountNum=ReadString("Please ,Enter Client account number to withdraw.\n>> ");
+        vector<sClient> vData=getData::LoadClientData();
+        short ClientIndex=subProcess::FindClientData(vData,accountNum);
+
+        printData::PrintSearchingResult(vData,ClientIndex);
+
+        if (ClientIndex!=-1)
+        {
+            unsigned int withdrawAmount=ReadNumInRange("Enter your amount to withdraw\n>> ",10,vData[ClientIndex].accountBalance);
+            bool continueupdateProcess=GetBoolResponse("Are you sure to withdraw this amount (" 
+            + to_string(withdrawAmount) + "). (y/n)\n>> ","y");
+
+            if (continueupdateProcess)
+            {
+                vData[ClientIndex].accountBalance-=withdrawAmount;
+                WriteDataOnFile(fileName,format::ConvertRecordsToLines(vData,delim));
+                alert("Done ,Withdraw amount has been added successfully",1);
+            }
+            
+        }
+    }
+    
+    void TotalBalancesFunc()
+    {
+        vector<sClient> vData=getData::LoadClientData();
+        ClientOprations::PrintClientsData();
+        alert("Total Balances : "+to_string(subProcess::CalcTotalBalances(vData)));
+    }
+} // namespace transactions
 
 namespace mainScreensFuncs
 {
@@ -342,7 +393,7 @@ namespace mainScreensFuncs
             break;
         
         case enTransChoices::MainMenu:
-            links::toHome();
+            links::toHome(false);
             break;
         
         default:
@@ -413,10 +464,14 @@ namespace mainScreensFuncs
 
 namespace links
 {
-    void toHome()
+    void toHome(bool load)
     {
-        cout << "We will go to the Home ,";
-        system("pause");
+        if (load)
+        {
+            cout << "We will go to the Home ,";
+            system("pause");
+        }
+        
         mainScreensFuncs::Home();
     }
     void toTransScreen()

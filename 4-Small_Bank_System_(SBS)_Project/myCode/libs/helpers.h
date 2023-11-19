@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 
 using namespace std;
@@ -34,14 +35,28 @@ namespace helpers
 
     }
 
-    int ReadNumInRange(string msg,int min,int max)
+    int ReadNumInRange(string msg,int min,int max=INT_MAX)
     {
-        int num=min-1;
+        int num;
+        bool errorMax=false;
+        bool errorMin=false;
         do
         {
+            if (errorMax)
+            {
+                cout << "Your number must be lower than : " << max << endl;
+            }else if (errorMin)
+            {
+                cout << "Your number must be higher than : " << min << endl;
+            }
+            
+
             cout << msg;
             cin >> num;
             cin.ignore();
+            
+            (num<min)?errorMin=true:errorMax=true;
+            
         } while (num < min || num > max);
 
         return num;
