@@ -3,7 +3,8 @@ using namespace std;
 
 namespace configs
 {
-    const string fileName = "Clients_Data.txt";
+    const string ClientsFileName = "db/Clients_Data.txt";
+    const string AdminsFileName = "db/Admins_Data.txt";
     const string delim = "|##|";
 
     enum enMainChoices
@@ -29,4 +30,10 @@ namespace configs
         string accountNum, pinCode, name, phone;
         float accountBalance;
     };
+    struct sAdmin
+    {
+        string userName, password;
+        short permitions;
+    };
+
 } // namespace configs

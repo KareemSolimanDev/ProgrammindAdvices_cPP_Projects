@@ -5,7 +5,7 @@
 #include "helpers.h"
 
 using namespace helpers;
-using namespace configs;
+using namespace configs;// to use main variabels in config file without name space
 
 // declare some name spaces to solve curiculer dependancy
 
@@ -43,6 +43,24 @@ namespace format
         line += to_string(cliData.accountBalance);
         return line;
     }
+    
+    sAdmin ConvertLineToRecord(string line,bool isAdmin)
+    {
+        vector<string> vSplitedRecord = SplitWords(line, delim);
+        sAdmin record;
+        record.userName = vSplitedRecord[0];
+        record.password = vSplitedRecord[1];
+        record.permitions = stoi(vSplitedRecord[2]);
+        return record;
+    }
+
+    string ConvertRecordToLine(sAdmin adminData, string delim)
+    {
+        string line = adminData.userName + delim;
+        line += adminData.password + delim;
+        line += to_string(adminData.permitions);
+        return line;
+    }
 
     vector<string> ConvertRecordsToLines(vector<sClient> Data, string delim)
     {
@@ -65,6 +83,18 @@ namespace format
         }
         return vFormatedData;
     }
+    
+    vector<sAdmin> FormatAdminsData(vector<string> vData)
+    {
+        sAdmin formatedData;
+        vector<sAdmin> vFormatedData;
+        for (string &i : vData)
+        {
+            formatedData = ConvertLineToRecord(i,true);
+            vFormatedData.push_back(formatedData);
+        }
+        return vFormatedData;
+    }
 } // namespace format
 
 namespace subProcess
@@ -77,6 +107,19 @@ namespace subProcess
             if (vData[client].accountNum == accountNum)
             {
                 DataIndex = client;
+                break;
+            }
+        }
+        return DataIndex;
+    }
+    short FindAdminData(vector<sAdmin> vData, string userName)
+    {
+        short DataIndex = -1;
+        for (short Admin = 0; Admin < vData.size(); Admin++)
+        {
+            if (vData[Admin].userName == userName)
+            {
+                DataIndex = Admin;
                 break;
             }
         }
@@ -107,7 +150,7 @@ namespace subProcess
 
 namespace getData
 {
-    vector<string> GetClientsDataFromFile()
+    vector<string> GetDataFromFile(string fileName)
     {
         fstream File;
         string Data;
@@ -121,21 +164,29 @@ namespace getData
         return vData;
     }
 
-    vector<sClient> LoadClientData()
+    vector<sClient> LoadClientsData()
     {
-        vector<string> ClientData = GetClientsDataFromFile();
+        vector<string> ClientData = GetDataFromFile(ClientsFileName);
         vector<sClient> FormatedClientData = format::FormatClientsData(ClientData);
 
         return FormatedClientData;
 
-        // return format::FormatClientsData(GetClientsDataFromFile());
+        // return format::FormatClientsData(GetDataFromFile());
         // this commented code above cause a bad_alloc error
         // visit README.md file in project notes number (3)
     }
 
+    vector<sAdmin> LoadAdminsData()
+    {
+        vector<string> AdminData = GetDataFromFile(AdminsFileName);
+        vector<sAdmin> FormatedAdminData = format::FormatAdminsData(AdminData);
+
+        return FormatedAdminData;
+    }
+
     string ReadPrimaryKey()
     {
-        vector<sClient> vData = LoadClientData();
+        vector<sClient> vData = LoadClientsData();
         string accountNumber = ReadString("Enter Account number.\n>> ");
         while (subProcess::FindClientData(vData, accountNumber) != -1)
         {
@@ -200,6 +251,46 @@ namespace printData
     }
 } // namespace printData
 
+
+namespace AdminOprations
+{
+    
+} // namespace AdminOprations
+
+namespace SecurityOperations
+{
+    bool CheckAdminData(string fileName,string userName,string password)
+    {
+        vector<sAdmin> vData = getData::LoadAdminsData();
+        for (sAdmin admin : vData)
+        {
+            if(admin.userName==userName&&admin.password==password)
+                return true;
+        }
+        return false;
+    }
+
+    string Login()
+    {
+        bool unlogged=true;
+        string userName,password;
+        system("cls");
+        alert("Login Screen.");
+        while (unlogged)
+        {
+            userName=ReadString("Enter your user name.\n>> ");
+            password=ReadString("Enter your password.\n>> ");
+            unlogged=!CheckAdminData(AdminsFileName,userName,password);
+            if(unlogged)
+                cout << "Oops,Data is incorrect!!, please try again\n";
+
+            
+        }
+        return userName;
+    }
+} // namespace SecurityOperations
+
+
 namespace ClientOprations
 {
 
@@ -208,14 +299,14 @@ namespace ClientOprations
         do
         {
             string Data = format::ConvertRecordToLine(getData::ReadClientData(), delim);
-            AppendDataToFile(fileName, Data);
+            AppendDataToFile(ClientsFileName, Data);
             alert("Client has been added successfully.");
         } while (GetBoolResponse("Do you want to add anothr client. (y/n)", "y"));
     }
 
     void PrintClientsData()
     {
-        vector<sClient> vData = getData::LoadClientData();
+        vector<sClient> vData = getData::LoadClientsData();
 
         cout << "\n\t\t\t\t\tClient List (" << vData.size() << ") Client(s).";
         cout << "\n_______________________________________________________";
@@ -251,7 +342,7 @@ namespace ClientOprations
     void SearchingResult()
     {
         string accountNum = ReadString("Enter Accout Number to search\n>> ");
-        vector<sClient> vData = getData::LoadClientData();
+        vector<sClient> vData = getData::LoadClientsData();
         short ClientIndex = subProcess::FindClientData(vData, accountNum);
 
         printData::PrintSearchingResult(vData, ClientIndex);
@@ -261,7 +352,7 @@ namespace ClientOprations
     {
         string accountNum = ReadString("Enter Accout Number to update\n>> ");
 
-        vector<sClient> vData = getData::LoadClientData();
+        vector<sClient> vData = getData::LoadClientsData();
         short ClientIndex = subProcess::FindClientData(vData, accountNum);
 
         printData::PrintSearchingResult(vData, ClientIndex);
@@ -272,7 +363,7 @@ namespace ClientOprations
             if (continueupdateProcess)
             {
                 subProcess::UpdateRecordFromVector(vData, ClientIndex);
-                WriteDataOnFile(fileName, format::ConvertRecordsToLines(vData, delim));
+                WriteDataOnFile(ClientsFileName, format::ConvertRecordsToLines(vData, delim));
                 alert("Client updated successfully");
             }
         }
@@ -281,7 +372,7 @@ namespace ClientOprations
     {
         string accountNum = ReadString("Enter Accout Number to delete\n>> ");
 
-        vector<sClient> vData = getData::LoadClientData();
+        vector<sClient> vData = getData::LoadClientsData();
         short ClientIndex = subProcess::FindClientData(vData, accountNum);
 
         printData::PrintSearchingResult(vData, ClientIndex);
@@ -292,7 +383,7 @@ namespace ClientOprations
             if (continuedeleteProcess)
             {
                 subProcess::DeleteRecordFromVector(vData, ClientIndex);
-                WriteDataOnFile(fileName, format::ConvertRecordsToLines(vData, delim));
+                WriteDataOnFile(ClientsFileName, format::ConvertRecordsToLines(vData, delim));
                 alert("Client deleted successfully");
             }
         }
@@ -315,7 +406,7 @@ namespace transactions
         alert(ProcessTitle + " Screen");
 
         string accountNum = ReadString("Please ,Enter Client account number to " + ProcessTitle + ".\n>> ");
-        vector<sClient> vData = getData::LoadClientData();
+        vector<sClient> vData = getData::LoadClientsData();
         short ClientIndex = subProcess::FindClientData(vData, accountNum);
 
         printData::PrintSearchingResult(vData, ClientIndex);
@@ -328,7 +419,7 @@ namespace transactions
             {
                 vData[ClientIndex].accountBalance += (choise == enTransChoices::Deposite) ? Amount : -Amount;
 
-                WriteDataOnFile(fileName, format::ConvertRecordsToLines(vData, delim));
+                WriteDataOnFile(ClientsFileName, format::ConvertRecordsToLines(vData, delim));
                 alert("Done ," + ProcessTitle + " process has been added successfully", 1);
             }
         }
@@ -336,7 +427,7 @@ namespace transactions
 
     void TotalBalancesFunc()
     {
-        vector<sClient> vData = getData::LoadClientData();
+        vector<sClient> vData = getData::LoadClientsData();
         ClientOprations::PrintClientsData();
         alert("Total Balances = " + to_string(subProcess::CalcTotalBalances(vData)));
     }
@@ -349,9 +440,10 @@ namespace mainScreensFuncs
 
     void Home()
     {
+        string userName=SecurityOperations::Login();
         vector<string> menuItems = {"Show All Clients", "Add new client", "Find client", "Update client", "Delete client", "Transactions", "Exit"};
         system("cls");
-        alert("Welcome Admin ,Dashboard here");
+        alert("Welcome "+userName+" ,Dashboard here");
         menu("Main menu", menuItems);
 
         enMainChoices choice = (enMainChoices)ReadNumInRange("Please ,Enter your choice from menu : ", 1, menuItems.size());
@@ -449,5 +541,6 @@ namespace links
         system("pause");
         mainScreensFuncs::TransactionsScreen();
     }
+
 
 } // namespace links

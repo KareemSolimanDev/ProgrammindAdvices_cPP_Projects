@@ -1,6 +1,6 @@
 # Small_Bank_System_(SBS)_Project
 
-### Project functions
+### Project versions & functions
 <hr>
 
 1. #### V: 1.1
@@ -18,7 +18,14 @@
 3. #### V: 3.0
     1. improve code and fix some errors.  
     2. add links to navigate among pages.  
-    3. Finished!.
+
+4. #### V: 4.9
+    1. login screen for admins.
+    2. handel admin permitions.
+    3. add admins based on permetions.
+    4. search in admins based on permetions.
+    5. update admins based on permetions.
+    6. delete admins based on permetions.  
 
 <hr>
 <hr>
@@ -35,5 +42,20 @@
 4. in ./myCode/libs/mainFuncs.h(DeleteClient() and UpdateClient() functions) i can gather them in one function because they have alot of repeted code to apply DRY(Donot Repeat Yourself) but this will kill SRP(Single Responsapility Prinsiple) so i decided to use SRP to make code easy to understand, maintain, and extend (i found Command pattern while search that can solve DRY and SRP maybe i will learn it later).
 
 5. in note(4) i preferd to seprate functions, now in ./myCode/libs/mainFuncs.h(Transaction() function) i used another style to apply DRY ,so i gather Deposite() and Withdraw() in one function(Transaction() function).
+
+6. in V:4.9 when i try to add admin file name to config file to use it in mainFunc file i faced problem , after fighting with code and changing the path of file i solve it
+so there is a problem explanation:
+
+    ##### files structur:
+    ```
+    myCode/
+        db/
+            admin_data.txt
+        libs/
+            config.h
+            mainFunc.h
+        run.cpp
+    ```
+    i want to reach admin_data.txt from config.h so it is supposed to be '../db/admin_data.txt' but the path must depend on executable's location(exe file) like 'db/admin_data.txt'.
 
 ^_^
