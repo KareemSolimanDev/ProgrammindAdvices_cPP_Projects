@@ -12,11 +12,13 @@ using namespace configs;// to use main variabels in config file without name spa
 namespace getData
 {
     sClient GetUpdatedClientData();
+    sAdmin GetUpdatedAdminData();
 };
 namespace links
 {
-    void toHome(bool load = true);
+    void toHome(bool load = true,bool logged=true);
     void toTransScreen();
+    void toAdminScreen();
 } // namespace links
 //=======================================
 
@@ -72,6 +74,18 @@ namespace format
         }
         return strData;
     }
+    
+    vector<string> ConvertRecordsToLines(vector<sAdmin> Data, string delim)
+    {
+        vector<string> strData;
+
+        for (sAdmin &admin : Data)
+        {
+            strData.push_back(ConvertRecordToLine(admin, delim));
+        }
+        return strData;
+    }
+
     vector<sClient> FormatClientsData(vector<string> vData)
     {
         sClient formatedData;
@@ -132,7 +146,20 @@ namespace subProcess
         newRecord.accountNum = vec[RecordIndex].accountNum;
         vec[RecordIndex] = newRecord;
     }
+
+    void UpdateRecordFromVector(vector<sAdmin> &vec, short RecordIndex)
+    {
+        sAdmin newRecord = getData::GetUpdatedAdminData();
+        newRecord.userName = vec[RecordIndex].userName;
+        vec[RecordIndex] = newRecord;
+    }
+    
     void DeleteRecordFromVector(vector<sClient> &vec, short RecordIndex)
+    {
+        vec.erase(vec.begin() + RecordIndex);
+    }
+
+    void DeleteRecordFromVector(vector<sAdmin> &vec, short RecordIndex)
     {
         vec.erase(vec.begin() + RecordIndex);
     }
@@ -209,6 +236,17 @@ namespace getData
         return CliData;
     }
 
+    sAdmin ReadAdminData()
+    {
+        sAdmin AdminData;
+        cout << "\n\t\tPlease ,Enter Admin data.\n\n";
+        AdminData.userName = ReadString("Enter username.\n>> ");
+        AdminData.password = ReadString("Enter password.\n>> ");
+        AdminData.permitions = -1;
+
+        return AdminData;
+    }
+
     sClient GetUpdatedClientData()
     {
         sClient CliData;
@@ -219,6 +257,16 @@ namespace getData
         CliData.accountBalance = stof(ReadString("Enter new balance.\n>> "));
 
         return CliData;
+    }
+    sAdmin GetUpdatedAdminData()
+    {
+        sAdmin AdminData;
+        cout << "\n\t\tPlease enter new Admin data.\n\n";
+        AdminData.password = ReadString("Enter new password.\n>> ");
+        AdminData.permitions = stoi(ReadString("Enter new permitions.\n>> "));
+
+
+        return AdminData;
     }
 } // namespace getData
 
@@ -249,13 +297,29 @@ namespace printData
             cout << "Oops , Client is not here" << endl;
         }
     }
+    void PrintAdminData(sAdmin Data)
+    {
+        cout << "\t\t\t\t______Client Data______\n\n";
+        cout << "===========================================================\n";
+        cout << "User Name   : " << Data.userName << "\n";
+        cout << "Password        : " << Data.password << "\n";
+        cout << "Permitions     : " << Data.permitions << "\n";
+        cout << "===========================================================" << endl;
+    }
+
+    void PrintSearchingResult(vector<sAdmin> vData, short ClientIndex)
+    {
+
+        if (ClientIndex != -1)
+        {
+            PrintAdminData(vData[ClientIndex]);
+        }
+        else
+        {
+            cout << "Oops , Admin is not here" << endl;
+        }
+    }
 } // namespace printData
-
-
-namespace AdminOprations
-{
-    
-} // namespace AdminOprations
 
 namespace SecurityOperations
 {
@@ -272,20 +336,19 @@ namespace SecurityOperations
 
     string Login()
     {
-        bool unlogged=true;
+        bool validatedData=true;
         string userName,password;
-        system("cls");
-        alert("Login Screen.");
-        while (unlogged)
+        do
         {
+            system("cls");
+            alert("Login Screen.");
+            if(!validatedData)
+                cout << "Oops,Data is incorrect!!, please try again\n";
             userName=ReadString("Enter your user name.\n>> ");
             password=ReadString("Enter your password.\n>> ");
-            unlogged=!CheckAdminData(AdminsFileName,userName,password);
-            if(unlogged)
-                cout << "Oops,Data is incorrect!!, please try again\n";
-
-            
-        }
+            validatedData=CheckAdminData(AdminsFileName,userName,password);
+        } while (!validatedData);
+        
         return userName;
     }
 } // namespace SecurityOperations
@@ -391,6 +454,97 @@ namespace ClientOprations
 
 } // namespace ClientOprations
 
+namespace AdminOprations
+{
+
+    void AddAdmins()
+    {
+        do
+        {
+            string Data = format::ConvertRecordToLine(getData::ReadAdminData(), delim);
+            AppendDataToFile(AdminsFileName, Data);
+            alert("Admin has been added successfully.");
+        } while (GetBoolResponse("Do you want to add anothr Admin. (y/n)", "y"));
+    }
+
+    void PrintAdminsData()
+    {
+        vector<sAdmin> vData = getData::LoadAdminsData();
+
+        cout << "\n\t\t\t\t\tAdmin List (" << vData.size() << ") admin(s).";
+        cout << "\n_______________________________________________________";
+        cout << "_________________________________________\n"
+             << endl;
+        cout << "| " << left << setw(10) << "User name";
+        cout << "| " << left << setw(10) << "Password";
+        cout << "| " << left << setw(12) << "Permitions";
+        cout << "\n_______________________________________________________";
+        cout << "_________________________________________\n"
+             << endl;
+
+        for (sAdmin &admin : vData)
+        {
+            cout << "| " << setw(10) << left << admin.userName;
+            cout << "| " << setw(10) << left << admin.password;
+            cout << "| " << setw(12) << left << admin.permitions;
+            cout << endl;
+        }
+        cout << "\n_______________________________________________________";
+        cout << "_________________________________________\n"
+             << endl;
+    }
+    void SearchingResult()
+    {
+        string userName = ReadString("Enter User name to search\n>> ");
+        vector<sAdmin> vData = getData::LoadAdminsData();
+        short AdminIndex = subProcess::FindAdminData(vData, userName);
+
+        printData::PrintSearchingResult(vData, AdminIndex);
+    }
+    // visit README.md file in project notes number (4)
+    void UpdateAdmin()
+    {
+        string userName = ReadString("Enter user name to update\n>> ");
+
+        vector<sAdmin> vData = getData::LoadAdminsData();
+        short AdminIndex = subProcess::FindAdminData(vData, userName);
+
+        printData::PrintSearchingResult(vData, AdminIndex);
+
+        if (AdminIndex != -1)
+        {
+            bool continueupdateProcess = GetBoolResponse("Are you sure to update this Admin. (y/n)\n>> ", "y");
+            if (continueupdateProcess)
+            {
+                subProcess::UpdateRecordFromVector(vData, AdminIndex);
+                WriteDataOnFile(AdminsFileName, format::ConvertRecordsToLines(vData, delim));
+                alert("Admin updated successfully");
+            }
+        }
+    }
+    void DeleteAdmin()
+    {
+        string userName = ReadString("Enter user name to delete\n>> ");
+
+        vector<sAdmin> vData = getData::LoadAdminsData();
+        short AdminIndex = subProcess::FindAdminData(vData, userName);
+
+        printData::PrintSearchingResult(vData, AdminIndex);
+
+        if (AdminIndex != -1)
+        {
+            bool continuedeleteProcess = GetBoolResponse("Are you sure to delete this Admin. (y/n)\n>> ", "y");
+            if (continuedeleteProcess)
+            {
+                subProcess::DeleteRecordFromVector(vData, AdminIndex);
+                WriteDataOnFile(AdminsFileName, format::ConvertRecordsToLines(vData, delim));
+                alert("Admin deleted successfully");
+            }
+        }
+    }
+
+} // namespace AdminOprations
+
 namespace transactions
 {
     unsigned GetTransactionAmount()
@@ -436,12 +590,14 @@ namespace transactions
 namespace mainScreensFuncs
 {
     void CallSuitableProcess(enMainChoices choice);
+    void CallSuitableProcess(enManageAdminsChoices choice);
     void CallSuitableTransaction(enTransChoices choise);
 
-    void Home()
+    void Home(bool logged=false)
     {
-        string userName=SecurityOperations::Login();
-        vector<string> menuItems = {"Show All Clients", "Add new client", "Find client", "Update client", "Delete client", "Transactions", "Exit"};
+        string userName=(!logged)?SecurityOperations::Login():"again";// i can use global var to store username
+
+        vector<string> menuItems = {"Show All Clients", "Add new client", "Find client", "Update client", "Delete client", "Transactions", "Manage admins", "Logout"};
         system("cls");
         alert("Welcome "+userName+" ,Dashboard here");
         menu("Main menu", menuItems);
@@ -458,6 +614,17 @@ namespace mainScreensFuncs
         menu("Transactions menu", menuItems);
         enTransChoices choice = (enTransChoices)ReadNumInRange("Please ,Enter your choice from menu : ", 1, menuItems.size());
         CallSuitableTransaction(choice);
+    }
+
+    void ManageAdminsScreen()
+    {
+        vector<string> menuItems = {"Show All admins", "Add new admin", "Find admin", "Update admin", "Delete admin", "Main menu"};
+        system("cls");
+        alert("Manage Admins Screen");
+        menu("Admin menu", menuItems);
+
+        enManageAdminsChoices choice = (enManageAdminsChoices)ReadNumInRange("Please ,Enter your choice from menu : ", 1, menuItems.size());
+        CallSuitableProcess(choice);
     }
 
     void CallSuitableProcess(enMainChoices choice)
@@ -488,8 +655,45 @@ namespace mainScreensFuncs
         case enMainChoices::Transactions:
             TransactionsScreen();
             break;
-        case enMainChoices::Exit:
-            alert("Program Closed successfully");
+        case enMainChoices::ManageAdmins:
+            ManageAdminsScreen();
+            break;
+        case enMainChoices::Logout:
+            links::toHome(false,false);
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    void CallSuitableProcess(enManageAdminsChoices choice)
+    {
+        system("cls");
+        switch (choice)
+        {
+        case enManageAdminsChoices::ShowAdminList:
+            AdminOprations::PrintAdminsData();
+            links::toAdminScreen();
+            break;
+        case enManageAdminsChoices::AddAdmin:
+            AdminOprations::AddAdmins();
+            links::toAdminScreen();
+            break;
+        case enManageAdminsChoices::SearchAdmin:
+            AdminOprations::SearchingResult();
+            links::toAdminScreen();
+            break;
+        case enManageAdminsChoices::UpdateAdmin:
+            AdminOprations::UpdateAdmin();
+            links::toAdminScreen();
+            break;
+        case enManageAdminsChoices::DeleteAdmin:
+            AdminOprations::DeleteAdmin();
+            links::toAdminScreen();
+            break;
+        case enManageAdminsChoices::MainMenuA:
+            links::toHome(false);
             break;
 
         default:
@@ -525,7 +729,7 @@ namespace mainScreensFuncs
 
 namespace links
 {
-    void toHome(bool load)
+    void toHome(bool load,bool logged)
     {
         if (load)
         {
@@ -533,13 +737,20 @@ namespace links
             system("pause");
         }
 
-        mainScreensFuncs::Home();
+        mainScreensFuncs::Home(logged);
     }
     void toTransScreen()
     {
         cout << "We will go to the transactions screen ,";
         system("pause");
         mainScreensFuncs::TransactionsScreen();
+    }
+    
+    void toAdminScreen()
+    {
+        cout << "We will go to the admin screen ,";
+        system("pause");
+        mainScreensFuncs::ManageAdminsScreen();
     }
 
 

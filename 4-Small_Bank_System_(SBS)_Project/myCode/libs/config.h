@@ -15,16 +15,25 @@ namespace configs
         Update,
         Delete,
         Transactions,
-        Exit
+        ManageAdmins,
+        Logout,
     };
     enum enTransChoices
     {
         Deposite = 1,
         Withdraw,
         TotalBalances,
-        MainMenu
+        MainMenu,
     };
-
+    enum enManageAdminsChoices
+    {
+        ShowAdminList = 1,
+        AddAdmin,
+        SearchAdmin,
+        UpdateAdmin,
+        DeleteAdmin,
+        MainMenuA,
+    };
     struct sClient
     {
         string accountNum, pinCode, name, phone;
