@@ -21,7 +21,7 @@
 
 4. #### V: 4.9
     1. login screen for admins.
-    2. handel admin permitions.
+    2. handel admin Permissions.
     3. add admins based on permetions.
     4. search in admins based on permetions.
     5. update admins based on permetions.

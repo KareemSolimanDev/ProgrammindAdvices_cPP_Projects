@@ -3,9 +3,6 @@ using namespace std;
 
 namespace configs
 {
-    const string ClientsFileName = "db/Clients_Data.txt";
-    const string AdminsFileName = "db/Admins_Data.txt";
-    const string delim = "|##|";
 
     enum enMainChoices
     {
@@ -34,6 +31,17 @@ namespace configs
         DeleteAdmin,
         MainMenuA,
     };
+    enum enAdminPermissions
+    {
+        ShowClientListP = 1,
+        AddClientP=2,
+        SearchClientP=4,
+        UpdateClientP=8,
+        DeleteClientP=16,
+        TransactionsP=32,
+        ManageAdminsP=64,
+    };
+    
     struct sClient
     {
         string accountNum, pinCode, name, phone;
@@ -42,7 +50,14 @@ namespace configs
     struct sAdmin
     {
         string userName, password;
-        short permitions;
+        short permissions;
     };
+
+    const string ClientsFileName = "db/Clients_Data.txt";
+    const string AdminsFileName = "db/Admins_Data.txt";
+    const string delim = "|##|";
+
+    sAdmin __CurrentAdmin__;
+
 
 } // namespace configs

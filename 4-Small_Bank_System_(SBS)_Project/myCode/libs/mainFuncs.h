@@ -52,7 +52,7 @@ namespace format
         sAdmin record;
         record.userName = vSplitedRecord[0];
         record.password = vSplitedRecord[1];
-        record.permitions = stoi(vSplitedRecord[2]);
+        record.permissions = stoi(vSplitedRecord[2]);
         return record;
     }
 
@@ -60,7 +60,7 @@ namespace format
     {
         string line = adminData.userName + delim;
         line += adminData.password + delim;
-        line += to_string(adminData.permitions);
+        line += to_string(adminData.permissions);
         return line;
     }
 
@@ -211,7 +211,7 @@ namespace getData
         return FormatedAdminData;
     }
 
-    string ReadPrimaryKey()
+    string ReadAccountNumber()
     {
         vector<sClient> vData = LoadClientsData();
         string accountNumber = ReadString("Enter Account number.\n>> ");
@@ -223,11 +223,23 @@ namespace getData
         return accountNumber;
     }
 
+    string ReadUserName()
+    {
+        vector<sAdmin> vData = LoadAdminsData();
+        string userName = ReadString("Enter user name.\n>> ");
+        while (subProcess::FindAdminData(vData, userName) != -1)
+        {
+            userName = ReadString("Oops ,Admin already exist ,Enter Another User name.\n>> ");
+        }
+
+        return userName;
+    }
+
     sClient ReadClientData()
     {
         sClient CliData;
         cout << "\n\t\tPlease ,Enter client data.\n\n";
-        CliData.accountNum = ReadPrimaryKey();
+        CliData.accountNum = ReadAccountNumber();
         CliData.pinCode = ReadString("Enter pin code.\n>> ");
         CliData.name = ReadString("Enter the name.\n>> ");
         CliData.phone = ReadString("Enter phone number.\n>> ");
@@ -236,13 +248,39 @@ namespace getData
         return CliData;
     }
 
+    short ReadPermissions()
+    {
+        short PerNum=0;
+        if (GetBoolResponse("Do you want to give full access,(y/n)\n>>","y"))
+        {
+            PerNum=-1;
+        }else{
+            cout << "Do you want to give access to :\n";
+            PerNum|=(GetBoolResponse("Show Client list,(y/n)\n>>","y")?enAdminPermissions::ShowClientListP:0);
+
+            PerNum|=(GetBoolResponse("Add Client,(y/n)\n>>","y")?enAdminPermissions::AddClientP:0);
+
+            PerNum|=(GetBoolResponse("Find Client,(y/n)\n>>","y")?enAdminPermissions::SearchClientP:0);
+
+            PerNum|=(GetBoolResponse("Update Client,(y/n)\n>>","y")?enAdminPermissions::UpdateClientP:0);
+
+            PerNum|=(GetBoolResponse("Delete Client,(y/n)\n>>","y")?enAdminPermissions::DeleteClientP:0);
+
+            PerNum|=(GetBoolResponse("TransActions,(y/n)\n>>","y")?enAdminPermissions::TransactionsP:0);
+
+            PerNum|=(GetBoolResponse("Manage admins,(y/n)\n>>","y")?enAdminPermissions::ManageAdminsP:0);
+        }
+        
+        return PerNum;
+    }
+
     sAdmin ReadAdminData()
     {
         sAdmin AdminData;
         cout << "\n\t\tPlease ,Enter Admin data.\n\n";
-        AdminData.userName = ReadString("Enter username.\n>> ");
+        AdminData.userName = ReadUserName();
         AdminData.password = ReadString("Enter password.\n>> ");
-        AdminData.permitions = -1;
+        AdminData.permissions = ReadPermissions();
 
         return AdminData;
     }
@@ -263,7 +301,7 @@ namespace getData
         sAdmin AdminData;
         cout << "\n\t\tPlease enter new Admin data.\n\n";
         AdminData.password = ReadString("Enter new password.\n>> ");
-        AdminData.permitions = stoi(ReadString("Enter new permitions.\n>> "));
+        AdminData.permissions = ReadPermissions();
 
 
         return AdminData;
@@ -303,7 +341,7 @@ namespace printData
         cout << "===========================================================\n";
         cout << "User Name   : " << Data.userName << "\n";
         cout << "Password        : " << Data.password << "\n";
-        cout << "Permitions     : " << Data.permitions << "\n";
+        cout << "Permissions     : " << Data.permissions << "\n";
         cout << "===========================================================" << endl;
     }
 
@@ -323,19 +361,20 @@ namespace printData
 
 namespace SecurityOperations
 {
-    bool CheckAdminData(string fileName,string userName,string password)
+    sAdmin CheckAdminData(string userName,string password)
     {
         vector<sAdmin> vData = getData::LoadAdminsData();
         for (sAdmin admin : vData)
         {
             if(admin.userName==userName&&admin.password==password)
-                return true;
+                return admin;
         }
-        return false;
+        return {"NULL","password",0};
     }
 
-    string Login()
+    sAdmin Login()
     {
+        sAdmin admin;
         bool validatedData=true;
         string userName,password;
         do
@@ -346,10 +385,23 @@ namespace SecurityOperations
                 cout << "Oops,Data is incorrect!!, please try again\n";
             userName=ReadString("Enter your user name.\n>> ");
             password=ReadString("Enter your password.\n>> ");
-            validatedData=CheckAdminData(AdminsFileName,userName,password);
+            validatedData=((admin=CheckAdminData(userName,password)).userName==userName);
         } while (!validatedData);
         
-        return userName;
+        return admin;
+    }
+
+    bool AccessDenied(enMainChoices choice)
+    {
+        if (__CurrentAdmin__.permissions==-1||((__CurrentAdmin__.permissions&choice)==choice))
+        {
+            return true;
+        }else{
+            alert("Oops, Access to this page is denied !!");
+            cout << "\nWe will go to the Home ,";
+            system("pause");
+        }
+        return false;
     }
 } // namespace SecurityOperations
 
@@ -477,7 +529,7 @@ namespace AdminOprations
              << endl;
         cout << "| " << left << setw(10) << "User name";
         cout << "| " << left << setw(10) << "Password";
-        cout << "| " << left << setw(12) << "Permitions";
+        cout << "| " << left << setw(12) << "Permissions";
         cout << "\n_______________________________________________________";
         cout << "_________________________________________\n"
              << endl;
@@ -486,7 +538,7 @@ namespace AdminOprations
         {
             cout << "| " << setw(10) << left << admin.userName;
             cout << "| " << setw(10) << left << admin.password;
-            cout << "| " << setw(12) << left << admin.permitions;
+            cout << "| " << setw(12) << left << admin.permissions;
             cout << endl;
         }
         cout << "\n_______________________________________________________";
@@ -547,9 +599,14 @@ namespace AdminOprations
 
 namespace transactions
 {
-    unsigned GetTransactionAmount()
+    float GetTransactionAmount(enTransChoices choice,float accountBalance)
     {
-        unsigned Amount = ReadNumInRange("Enter your amount to transaction\n>> ", 10);
+        float Amount;
+        if(choice==enTransChoices::Withdraw)
+            Amount = ReadNumInRange("Enter your amount to transaction\n>> ", 10,accountBalance);
+        else
+            Amount = ReadNumInRange("Enter your amount to transaction\n>> ", 10);
+
         bool confirmProcess = GetBoolResponse("Are you sure to trans this amount (" + to_string(Amount) + "). (y/n)\n>> ", "y");
         return (confirmProcess) ? Amount : 0;
     }
@@ -567,11 +624,11 @@ namespace transactions
 
         if (ClientIndex != -1)
         {
-            unsigned Amount = GetTransactionAmount();
+            float Amount = GetTransactionAmount(choise,vData[ClientIndex].accountBalance);
 
             if (Amount)
             {
-                vData[ClientIndex].accountBalance += (choise == enTransChoices::Deposite) ? Amount : -Amount;
+                vData[ClientIndex].accountBalance += ((choise == enTransChoices::Deposite) ? Amount : -Amount);
 
                 WriteDataOnFile(ClientsFileName, format::ConvertRecordsToLines(vData, delim));
                 alert("Done ," + ProcessTitle + " process has been added successfully", 1);
@@ -595,14 +652,13 @@ namespace mainScreensFuncs
 
     void Home(bool logged=false)
     {
-        string userName=(!logged)?SecurityOperations::Login():"again";// i can use global var to store username
-
+        __CurrentAdmin__=(logged)?__CurrentAdmin__:SecurityOperations::Login();// in first visit logged=false if not, it supposed to store the admin.
         vector<string> menuItems = {"Show All Clients", "Add new client", "Find client", "Update client", "Delete client", "Transactions", "Manage admins", "Logout"};
         system("cls");
-        alert("Welcome "+userName+" ,Dashboard here");
+        alert("Welcome "+__CurrentAdmin__.userName+" ,Dashboard here");
         menu("Main menu", menuItems);
 
-        enMainChoices choice = (enMainChoices)ReadNumInRange("Please ,Enter your choice from menu : ", 1, menuItems.size());
+        enMainChoices choice = (enMainChoices)ReadNumInRange("Please ,Enter your choice from menu : ", 1, menuItems.size()+1);
         CallSuitableProcess(choice);
     }
 
@@ -633,30 +689,51 @@ namespace mainScreensFuncs
         switch (choice)
         {
         case enMainChoices::ShowList:
-            ClientOprations::PrintClientsData();
-            links::toHome();
+            if(SecurityOperations::AccessDenied(choice))
+            {
+                ClientOprations::PrintClientsData();
+            }
+            links::toHome(false);
             break;
         case enMainChoices::Add:
-            ClientOprations::AddClients();
-            links::toHome();
+            if(SecurityOperations::AccessDenied(choice))
+            {
+                ClientOprations::AddClients();
+            }
+            links::toHome(false);
             break;
         case enMainChoices::Search:
-            ClientOprations::SearchingResult();
-            links::toHome();
+            if(SecurityOperations::AccessDenied(choice))
+            {
+                ClientOprations::SearchingResult();
+            }
+            links::toHome(false);
             break;
         case enMainChoices::Update:
-            ClientOprations::UpdateClient();
-            links::toHome();
+            if(SecurityOperations::AccessDenied(choice))
+            {
+                ClientOprations::UpdateClient();
+            }
+            links::toHome(false);
             break;
         case enMainChoices::Delete:
-            ClientOprations::DeleteClient();
-            links::toHome();
+            if(SecurityOperations::AccessDenied(choice))
+            {
+                ClientOprations::DeleteClient();
+            }
+            links::toHome(false);
             break;
         case enMainChoices::Transactions:
-            TransactionsScreen();
+            if(SecurityOperations::AccessDenied(choice))
+            {
+                TransactionsScreen();
+            }
             break;
         case enMainChoices::ManageAdmins:
-            ManageAdminsScreen();
+            if(SecurityOperations::AccessDenied(choice))
+            {
+                ManageAdminsScreen();
+            }
             break;
         case enMainChoices::Logout:
             links::toHome(false,false);
