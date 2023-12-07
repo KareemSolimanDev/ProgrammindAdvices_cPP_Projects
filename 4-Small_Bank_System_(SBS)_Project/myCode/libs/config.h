@@ -33,15 +33,16 @@ namespace configs
     };
     enum enAdminPermissions
     {
+        AllP=-1,
         ShowClientListP = 1,
-        AddClientP=2,
-        SearchClientP=4,
-        UpdateClientP=8,
-        DeleteClientP=16,
-        TransactionsP=32,
-        ManageAdminsP=64,
+        AddClientP = 2,
+        SearchClientP = 4,
+        UpdateClientP = 8,
+        DeleteClientP = 16,
+        TransactionsP = 32,
+        ManageAdminsP = 64,
     };
-    
+
     struct sClient
     {
         string accountNum, pinCode, name, phone;
@@ -58,6 +59,5 @@ namespace configs
     const string delim = "|##|";
 
     sAdmin __CurrentAdmin__;
-
 
 } // namespace configs
