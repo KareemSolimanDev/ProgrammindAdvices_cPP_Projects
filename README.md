@@ -7,8 +7,8 @@ this repo for programming advices roadmap (all projects in C++)
 <hr>
 
 ### Repo Notes: 
-1. this repo for my C++ Projects on learning vhase.
-2. the projects with (OOP) prefix mean the project use OOP.
+1. <b>in learning vhase i focus my attention on code not documntation.</b>
+2. the projects with (OOP) prefix mean the project use OOP except that mean the project use functional programming.
 
 <hr>
 
@@ -26,3 +26,5 @@ this repo for programming advices roadmap (all projects in C++)
 #### 4. [Small Bank System (SBS) Project](https://github.com/kemooalsayd/ProgrammindAdvices_cPP_Projects/tree/main/4-Small_Bank_System_(SBS)_Project)
 
 #### 5. [(OOP) String Library Project](https://github.com/kemooalsayd/ProgrammindAdvices_cPP_Projects/tree/main/5-(OOP)-String_Library_Project)
+
+#### 6. [(OOP) Date Library Project](https://github.com/kemooalsayd/ProgrammindAdvices_cPP_Projects/tree/main/6-(OOP)-Date_Library_Project)
