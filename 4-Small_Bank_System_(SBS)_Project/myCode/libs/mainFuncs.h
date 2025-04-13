@@ -682,7 +682,7 @@ namespace mainScreensFuncs
         alert("Welcome " + __CurrentAdmin__.userName + " ,Dashboard here");
         menu("Main menu", menuItems);
 
-        enMainChoices choice = (enMainChoices)ReadNumInRange("Please ,Enter your choice from menu : ", 1, menuItems.size() + 1);
+        enMainChoices choice = (enMainChoices)ReadNumInRange("Please ,Enter your choice from menu : ", 1, menuItems.size());
         CallSuitableProcess(choice);
     }
 

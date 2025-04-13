@@ -47,11 +47,11 @@ namespace helpers
         {
             if (errorMax)
             {
-                cout << "Your number must be lower than : " << max << endl;
+                cout << "Your number must be lower than or equal : " << max << endl;
             }
             else if (errorMin)
             {
-                cout << "Your number must be higher than : " << min << endl;
+                cout << "Your number must be higher than or equal : " << min << endl;
             }
 
             cout << msg;
